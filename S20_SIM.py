@@ -13,6 +13,25 @@ _NUMBUTTONS = 4   # Number of buttons (binary on/off) for input
 _MATRIXSIZE = 10  # width and height of the pixel matrix output
 
 
+opcodes = {
+    "0": "R-format",
+    "1": "ADDI",
+    "2": "ASSIGNI",
+    "3": "BEQ",
+    "4": "BNE",
+    "5": "RAND"
+}
+
+function_codes = {
+    "0": "ADD",
+    "1": "SUB",
+    "2", "LOAD",
+    "3": "STORE",
+    "4": "IN",
+    "5": "OUT",
+    "6": "SGT"
+}
+
 class Simulator:
 
     def __init__(self):
@@ -77,3 +96,5 @@ class Simulator:
         print_mem(self.dmem, "DMEM")
         print_input(self.buttons, "Input")
         print_matrix(self.matrix, "Output")
+
+    def 
