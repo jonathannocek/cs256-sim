@@ -43,6 +43,7 @@ class Simulator:
     def load_bin(self, filename):
         # Load machine code from a file into instruction memory
         self.bin_filename = filename
+        print(bin_filename)
         with open(filename, 'r') as f:
             data = f.read()
         words = data.split()
@@ -76,9 +77,12 @@ class Simulator:
         #  3) Execute the instruction by updating the CPU state
         #     according to what the execution of that instruction
         #     would do.
-        self.fetch()
-        self.decode()
-        self.execute()
+        word = self.fetch()
+        op, r1, r2, imm, func = self.decode(word)
+        if (op == 0):
+            self.execute_r_type(op, r1, r2, func)
+        if (op == 1):
+            self.execute_i_type(op, r1, imm)
 
     def reset(self):
         # Reset the CPU state to just-powered-on, with everything but IMEM cleared
@@ -98,11 +102,14 @@ class Simulator:
         print_matrix(self.matrix, "Output")
     
     def fetch(self):
-        self.ir = self.get_imem(self.PC)
+        word = self.imem[self.PC]
         self.PC += 1
-        print(self.PC, self.ir)
+        print(word)
+        return(word)
 
-    def decode(self):
+    def decode(self, word):
+        # Convert from hex to bin
+        binary = SimulatorHelper._hex_to_binary(word)
         #need to get word from fetch this is just a placeholder
         word = 0b0001110110000001
         # decode word into fields 
@@ -132,16 +139,6 @@ class Simulator:
 
     def execute(self):
         pass
-
-    def get_imem(self, num):
-        return(self.imem[num])
-
-    def get_mem(self, num):
-        x = num // 10
-        y = num % 10
-        n = self.matrix[x][y]
-        return(n)
-
 
 class Instructions(Simulator):
     def _add(self, r1, r2):
@@ -240,7 +237,7 @@ class Instructions(Simulator):
         regfile[r1] = binaryRand & imm
 
 class SimulatorHelper(Simulator):
-    def _hex_to_binary(self, hex_string):
+    def _hex_to_binary(hex_string):
         '''
         Convert hexadecimal to binary
         '''
@@ -267,5 +264,4 @@ class SimulatorHelper(Simulator):
 # Main function for testing
 if __name__ == '__main__':
     sim = Simulator()
-    print(sim.buttons)
-    
+    sim.step()    
