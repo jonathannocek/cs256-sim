@@ -2,7 +2,7 @@
 # S20_SIM.py  --  Simulator class for the SIM CPU designed by CS256-S20.
 #
 from utils import print_val, print_mem, print_input, print_matrix
-
+import random
 
 # Constants for this architecture
 _NUMREG = 8       # number of registers in the register file
@@ -98,7 +98,9 @@ class Simulator:
         print_matrix(self.matrix, "Output")
     
     def fetch(self):
-        pass
+        self.ir = self.get_imem(self.PC)
+        self.PC += 1
+        print(self.PC, self.ir)
 
     def decode(self):
         #need to get word from fetch this is just a placeholder
@@ -131,93 +133,114 @@ class Simulator:
     def execute(self):
         pass
 
+    def get_imem(self, num):
+        return(self.imem[num])
+
+    def get_mem(self, num):
+        x = num // 10
+        y = num % 10
+        n = self.matrix[x][y]
+        return(n)
+
+
 class Instructions(Simulator):
-    def _add(self):
+    def _add(self, r1, r2):
         '''
         r1 = r1 + r2
         R-format
         '''
-        pass
+        self.regfile[r1] += self.regfile[r2]
 
-    def _addi(self):
+    def _addi(self, r1, imm):
         '''
         r1 = r1 + imm
         I-format
         '''
-        pass
+        self.regfile[r1] += imm
 
-    def _assigni(self):
+    def _assigni(self, r1, imm):
         '''
         r1 = imm
         I-format
         '''
-        pass
+        self.regfile[r1] = imm
 
-    def _sub(self):
+    def _sub(self, r1, r2):
         '''
         r1 = r1 - r2
         R-format
         '''
-        pass
+        self.regfile[r1] -= self.regfile[r2]
 
-    def _load(self):
+    def _load(self, r1, r2):
         '''
         r1 = Mem[r2]
         R-format
         '''
-        pass
+        self.regfile[r1] = self.dmem[r2]
 
-    def _store(self):
+    def _store(self, r1, r2):
         '''
         Mem[r2] = r1
         R-format
         '''
-        pass
+        self.dmem[r2] = self.regfile[r1]
 
-    def _beq(self):
+    def _beq(self, r1, label):
         '''
         If (r1 == $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
         '''
-        pass
+        if (regfile[r1] == regfile[7]):
+            self.pc = label
+        else:
+            pass
 
-    def _bne(self):
+    def _bne(self, r1, label):
         '''        
         If (r1 != $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
         '''
-        pass
+        if (regfile[r1] != regfile[7]):
+            self.pc = label
+        else:
+            pass
 
-    def _sgt(self):
+    def _sgt(self, r1, r2):
         '''
         $7 = (r1 > r2) ? 1 : 0 [implicitly, $7 is always used in the comparison]
         R-format
         '''
-        pass
+        if (regfile[r1] > regfile[r2]):
+            regfile[7] = 1
+        else:
+            regfile[7] = 0
 
-    def _in(self):
+    def _in(self, r1, r2):
         '''
         r1 = IO[r2]
         R-format
         '''
-        pass
+        self.regfile[r1] = self.buttons[r2]
 
-    def _out(self):
+    def _out(self, r1, r2):
         '''
         IO[r2] = r1
         R-format
         ''' 
-        pass
+        self.button[r2] = regfile[r1]
         
-    def _rand(self):
+    def _rand(self, r1, r2):
         '''
         r1 = [randvalue] & imm    [randvalue is a random 8-bit value]
         I-format
         '''
-        pass
+        randvalue = random.randint(0, 63)
+        binaryRand = SimulatorHelper._dec_to_binary(randvalue)
+        regfile[r1] = binaryRand & imm
 
 class SimulatorHelper(Simulator):
-    def hex2binary(self, hex_string):
+    def _hex_to_binary(self, hex_string):
         '''
         Convert hexadecimal to binary
         '''
@@ -225,15 +248,24 @@ class SimulatorHelper(Simulator):
         binary = binary[2:].zfill(16)
         return(binary)
     
-    def binary2hex(self, binary_string):
+    def _binary_to_hex(self, binary_string):
         '''
         Convert binary to hexadecimal
         '''
         hexadecimal = hex(int(binary_string, 2))
         return(hexadecimal)
+    
+    def _binary_to_dec(self, binary_string):
+        dec = int(binary_string, 2)
+        return(dec)
+
+    def _dec_to_binary(self, dec_string):
+        binary = bin(int(dec_string, 10))
+        binary = binary[2:].zfill(16)
+        return(binary)
 
 # Main function for testing
 if __name__ == '__main__':
-    s = SimulatorHelper()
-    binary = s.binary2hex('0000010010001101')
-    print(binary)
+    sim = Simulator()
+    print(sim.buttons)
+    
