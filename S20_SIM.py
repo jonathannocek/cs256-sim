@@ -101,6 +101,31 @@ class Simulator:
         pass
 
     def decode(self):
+        #need to get word from fetch this is just a placeholder
+        word = 0b0001110110000001
+        # decode word into fields 
+        opcodeMask = (0b111 << 13)
+        opcode = (word & opcodeMask) >> 13
+        #if opcode is 1 then the instruction is R-type and we need to get the registers and func code
+        if (opcode == 0):
+            r1Mask = (0b111 << 10)
+            r1 = (word & r1Mask) >> 10
+
+            r2Mask = (0b111 << 7)
+            r2 = (word & r2Mask) >> 7
+
+            funcMask = (0b1111111) 
+            funcCode = (word & funcMask)
+
+        #if opcode is anything else then the instruction is I-type and we need a register and an immediate and the opcode will dictate the exact instruction
+        else:
+            r1Mask = (0b111 << 10)
+            r1 = (word & r1Mask) >> 10
+
+            immediateMask = (0b1111111111)
+            immediate = (word & immediateMask)
+
+
         pass
 
     def execute(self):
