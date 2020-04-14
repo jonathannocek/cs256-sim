@@ -97,50 +97,98 @@ class Simulator:
         print_input(self.buttons, "Input")
         print_matrix(self.matrix, "Output")
     
-    def fetch():
+    def fetch(self):
         pass
 
-    def decode():
+    def decode(self):
         pass
 
-    def execute():
+    def execute(self):
         pass
 
 class Instructions(Simulator):
     def _add(self):
+        '''
+        r1 = r1 + r2
+        R-format
+        '''
         pass
 
     def _addi(self):
+        '''
+        r1 = r1 + imm
+        I-format
+        '''
         pass
 
     def _assigni(self):
+        '''
+        r1 = imm
+        I-format
+        '''
         pass
 
     def _sub(self):
+        '''
+        r1 = r1 - r2
+        R-format
+        '''
         pass
 
     def _load(self):
+        '''
+        r1 = Mem[r2]
+        R-format
+        '''
         pass
 
     def _store(self):
+        '''
+        Mem[r2] = r1
+        R-format
+        '''
         pass
 
     def _beq(self):
+        '''
+        If (r1 == $7) goto label [implicitly, $7 is always used in the comparison]
+        I-format
+        '''
         pass
 
     def _bne(self):
+        '''        
+        If (r1 != $7) goto label [implicitly, $7 is always used in the comparison]
+        I-format
+        '''
         pass
 
     def _sgt(self):
+        '''
+        $7 = (r1 > r2) ? 1 : 0 [implicitly, $7 is always used in the comparison]
+        R-format
+        '''
         pass
 
     def _in(self):
+        '''
+        r1 = IO[r2]
+        R-format
+        '''
         pass
 
     def _out(self):
+        '''
+        IO[r2] = r1
+        R-format
+        ''' 
         pass
         
     def _rand(self):
+        '''
+        r1 = [randvalue] & imm    [randvalue is a random 8-bit value]
+        I-format
+        '''
         pass
 
 class SimulatorHelper(Simulator):
@@ -158,8 +206,6 @@ class SimulatorHelper(Simulator):
         '''
         hexadecimal = hex(int(binary_string, 2))
         return(hexadecimal)
-
-
 
 # Main function for testing
 if __name__ == '__main__':
