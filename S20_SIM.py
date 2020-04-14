@@ -1,7 +1,6 @@
 #
 # S20_SIM.py  --  Simulator class for the SIM CPU designed by CS256-S20.
 #
-
 from utils import print_val, print_mem, print_input, print_matrix
 
 
@@ -12,8 +11,7 @@ _ADDRSIZE = _REGSIZE  # size (in bits) of DMEM addresses
 _NUMBUTTONS = 4   # Number of buttons (binary on/off) for input
 _MATRIXSIZE = 10  # width and height of the pixel matrix output
 
-
-opcodes = {
+_OPCODES = {
     "0": "R-format",
     "1": "ADDI",
     "2": "ASSIGNI",
@@ -22,10 +20,10 @@ opcodes = {
     "5": "RAND"
 }
 
-function_codes = {
+_FUNCTIONCODES = {
     "0": "ADD",
     "1": "SUB",
-    "2", "LOAD",
+    "2": "LOAD",
     "3": "STORE",
     "4": "IN",
     "5": "OUT",
@@ -78,7 +76,9 @@ class Simulator:
         #  3) Execute the instruction by updating the CPU state
         #     according to what the execution of that instruction
         #     would do.
-        pass
+        self.fetch()
+        self.decode()
+        self.execute()
 
     def reset(self):
         # Reset the CPU state to just-powered-on, with everything but IMEM cleared
@@ -96,5 +96,73 @@ class Simulator:
         print_mem(self.dmem, "DMEM")
         print_input(self.buttons, "Input")
         print_matrix(self.matrix, "Output")
+    
+    def fetch():
+        pass
 
-    def 
+    def decode():
+        pass
+
+    def execute():
+        pass
+
+class Instructions(Simulator):
+    def _add(self):
+        pass
+
+    def _addi(self):
+        pass
+
+    def _assigni(self):
+        pass
+
+    def _sub(self):
+        pass
+
+    def _load(self):
+        pass
+
+    def _store(self):
+        pass
+
+    def _beq(self):
+        pass
+
+    def _bne(self):
+        pass
+
+    def _sgt(self):
+        pass
+
+    def _in(self):
+        pass
+
+    def _out(self):
+        pass
+        
+    def _rand(self):
+        pass
+
+class SimulatorHelper(Simulator):
+    def hex2binary(self, hex_string):
+        '''
+        Convert hexadecimal to binary
+        '''
+        binary = bin(int(hex_string, 16))
+        binary = binary[2:].zfill(16)
+        return(binary)
+    
+    def binary2hex(self, binary_string):
+        '''
+        Convert binary to hexadecimal
+        '''
+        hexadecimal = hex(int(binary_string, 2))
+        return(hexadecimal)
+
+
+
+# Main function for testing
+if __name__ == '__main__':
+    s = SimulatorHelper()
+    binary = s.binary2hex('0000010010001101')
+    print(binary)
