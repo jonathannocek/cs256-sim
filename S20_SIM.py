@@ -148,6 +148,15 @@ class Simulator:
             return opcode, r1, r2, imm, func
 
     def execute(self, op, r1, r2, imm, func):
+        """Execute instruction
+        
+        Arguments:
+            op -- Opcode Code
+            r1 -- Register 1
+            r2 -- Register 2
+            imm -- Immediate Value
+            func -- Function code
+        """
         if (op == 0):
             if (func == 0):
                 self._add(r1, r2)
@@ -177,6 +186,9 @@ class Simulator:
                 self._rand(r1, imm)
     
     def update_matrix(self):
+        """
+        Update the matrix to match dmem
+        """
         i = 0
         for x in range(10):
             for y in range(10):
