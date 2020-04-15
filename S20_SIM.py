@@ -5,10 +5,10 @@ from utils import print_val, print_mem, print_input, print_matrix
 import random
 
 # Constants for this architecture
-_NUMREG = 8       # number of registers in the register file
-_REGSIZE = 8      # size (in bits) of each register)
+_NUMREG = 8  # number of registers in the register file
+_REGSIZE = 8  # size (in bits) of each register)
 _ADDRSIZE = _REGSIZE  # size (in bits) of DMEM addresses
-_NUMBUTTONS = 4   # Number of buttons (binary on/off) for input
+_NUMBUTTONS = 4  # Number of buttons (binary on/off) for input
 _MATRIXSIZE = 10  # width and height of the pixel matrix output
 
 _OPCODES = {
@@ -17,7 +17,7 @@ _OPCODES = {
     "2": "ASSIGNI",
     "3": "BEQ",
     "4": "BNE",
-    "5": "RAND"
+    "5": "RAND",
 }
 
 _FUNCTIONCODES = {
@@ -27,11 +27,11 @@ _FUNCTIONCODES = {
     "3": "STORE",
     "4": "IN",
     "5": "OUT",
-    "6": "SGT"
+    "6": "SGT",
 }
 
-class Simulator:
 
+class Simulator:
     def __init__(self):
         # CPU state:
         self.imem = [0]  # not affected by CPU reset, so only initialized here
@@ -43,7 +43,7 @@ class Simulator:
     def load_bin(self, filename):
         # Load machine code from a file into instruction memory
         self.bin_filename = filename
-        with open(filename, 'r') as f:
+        with open(filename, "r") as f:
             data = f.read()
         words = data.split()
         self.imem = [int(word, 16) for word in words]
@@ -58,9 +58,13 @@ class Simulator:
         #            third pressed, and the fourth not pressed.
         buttons = [int(c) for c in new_buttons]
         if len(buttons) != _NUMBUTTONS:
-            raise Exception(f"Incorrect number of buttons.  Got {len(buttons)}, expected {_NUMBUTTONS}.")
+            raise Exception(
+                f"Incorrect number of buttons.  Got {len(buttons)}, expected {_NUMBUTTONS}."
+            )
         if max(buttons) > 1 or min(self.buttons) < 0:
-            raise Exception(f"Invalid value for button.  Only allowed values are 0 and 1.")
+            raise Exception(
+                f"Invalid value for button.  Only allowed values are 0 and 1."
+            )
         self.buttons = buttons
 
     def step_n(self, n):
@@ -85,7 +89,7 @@ class Simulator:
         # Reset the CPU state to just-powered-on, with everything but IMEM cleared
         self.PC = 0
         self.regfile = [0] * _NUMREG
-        self.dmem = [0] * 2**_ADDRSIZE
+        self.dmem = [0] * 2 ** _ADDRSIZE
         self.buttons = [0] * _NUMBUTTONS
         self.matrix = [([0] * _MATRIXSIZE) for _ in range(_MATRIXSIZE)]
 
@@ -97,7 +101,7 @@ class Simulator:
         print_mem(self.dmem, "DMEM")
         print_input(self.buttons, "Input")
         print_matrix(self.matrix, "Output")
-    
+
     def fetch(self):
         """Fetch word in imem using the program counter, then increment PC
         
@@ -106,7 +110,7 @@ class Simulator:
         """
         word = self.imem[self.PC]
         self.PC += 1
-        return(word)
+        return word
 
     def decode(self, word):
         """Decode word and parse to components of R-type and I-Type instuctions
@@ -121,28 +125,28 @@ class Simulator:
             imm -- Only for I-Type, None for R-Type
             func -- Only for R-Type, None for I-Type
         """
-        opcode_mask = (0b111 << 13)
+        opcode_mask = 0b111 << 13
         opcode = (word & opcode_mask) >> 13
         # If opcode is 0, parse word for R-type instruction
-        if (opcode == 0):
-            r1_mask = (0b111 << 10)
+        if opcode == 0:
+            r1_mask = 0b111 << 10
             r1 = (word & r1_mask) >> 10
 
-            r2_mask = (0b111 << 7)
+            r2_mask = 0b111 << 7
             r2 = (word & r2_mask) >> 7
 
-            func_mask = (0b1111111) 
-            func = (word & func_mask)
+            func_mask = 0b1111111
+            func = word & func_mask
             imm = None
             return opcode, r1, r2, imm, func
 
         # If opcode is not 0, parse word for I-type instruction
         else:
-            r1_mask = (0b111 << 10)
+            r1_mask = 0b111 << 10
             r1 = (word & r1_mask) >> 10
 
-            immediate_mask = (0b1111111111)
-            imm = (word & immediate_mask)
+            immediate_mask = 0b1111111111
+            imm = word & immediate_mask
             r2 = None
             func = None
             return opcode, r1, r2, imm, func
@@ -157,34 +161,34 @@ class Simulator:
             imm -- Immediate Value
             func -- Function code
         """
-        if (op == 0):
-            if (func == 0):
+        if op == 0:
+            if func == 0:
                 self._add(r1, r2)
-            if (func == 1):
+            if func == 1:
                 self._sub(r1, r2)
-            if (func == 2):
+            if func == 2:
                 self._load(r1, r2)
-            if (func == 3):
+            if func == 3:
                 self._store(r1, r2)
-            if (func == 4):
+            if func == 4:
                 self._in(r1, r2)
-            if (func == 5):
+            if func == 5:
                 self._out(r1, r2)
-            if (func == 6):
+            if func == 6:
                 self._sgt(r1, r2)
 
         else:
-            if (op == 1):
+            if op == 1:
                 self._addi(r1, imm)
-            if (op == 2):
+            if op == 2:
                 self._assigni(r1, imm)
-            if (op == 3):
+            if op == 3:
                 self._beq(r1, label)
-            if (op == 4):
+            if op == 4:
                 self._bne(r1, label)
-            if (op == 5):
+            if op == 5:
                 self._rand(r1, imm)
-    
+
     def update_matrix(self):
         """
         Update the matrix to match dmem
@@ -194,105 +198,105 @@ class Simulator:
             for y in range(10):
                 self.matrix[x][y] = self.dmem[i]
                 i = i + 1
-                
 
     def _add(self, r1, r2):
-        '''
+        """
         r1 = r1 + r2
         R-format
-        '''
+        """
         self.regfile[r1] += self.regfile[r2]
 
     def _addi(self, r1, imm):
-        '''
+        """
         r1 = r1 + imm
         I-format
-        '''
+        """
         self.regfile[r1] += imm
 
     def _assigni(self, r1, imm):
-        '''
+        """
         r1 = imm
         I-format
-        '''
+        """
         self.regfile[r1] = imm
 
     def _sub(self, r1, r2):
-        '''
+        """
         r1 = r1 - r2
         R-format
-        '''
+        """
         self.regfile[r1] -= self.regfile[r2]
 
     def _load(self, r1, r2):
-        '''
+        """
         r1 = Mem[r2]
         R-format
-        '''
+        """
         self.regfile[r1] = self.dmem[r2]
 
     def _store(self, r1, r2):
-        '''
+        """
         Mem[r2] = r1
         R-format
-        '''
+        """
         self.dmem[r2] = self.regfile[r1]
 
     # TODO: Update label
     def _beq(self, r1, label):
-        '''
+        """
         If (r1 == $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
-        '''
-        if (self.regfile[r1] == self.regfile[7]):
+        """
+        if self.regfile[r1] == self.regfile[7]:
             self.pc = label
         else:
             pass
 
     # TODO: Update label
     def _bne(self, r1, label):
-        '''        
+        """        
         If (r1 != $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
-        '''
-        if (self.regfile[r1] != self.regfile[7]):
+        """
+        if self.regfile[r1] != self.regfile[7]:
             self.pc = label
         else:
             pass
 
     def _sgt(self, r1, r2):
-        '''
+        """
         $7 = (r1 > r2) ? 1 : 0 [implicitly, $7 is always used in the comparison]
         R-format
-        '''
-        if (self.regfile[r1] > self.regfile[r2]):
+        """
+        if self.regfile[r1] > self.regfile[r2]:
             self.regfile[7] = 1
         else:
             self.regfile[7] = 0
 
     def _in(self, r1, r2):
-        '''
+        """
         r1 = IO[r2]
         R-format
-        '''
+        """
         self.regfile[r1] = self.buttons[r2]
 
     def _out(self, r1, r2):
-        '''
+        """
         IO[r2] = r1
         R-format
-        ''' 
+        """
         self.button[r2] = regfile[r1]
-        
+
     def _rand(self, r1, imm):
-        '''
+        """
         r1 = [randvalue] & imm    [randvalue is a random 8-bit value]
         I-format
-        '''
+        """
         randvalue = random.randint(0, 63)
         self.regfile[r1] = randvalue & imm
 
+
 # Main function for testing
-if __name__ == '__main__':
+if __name__ == "__main__":
     sim = Simulator()
-    sim.step()    
+    sim.step()
