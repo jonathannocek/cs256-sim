@@ -43,7 +43,6 @@ class Simulator:
     def load_bin(self, filename):
         # Load machine code from a file into instruction memory
         self.bin_filename = filename
-        print(bin_filename)
         with open(filename, 'r') as f:
             data = f.read()
         words = data.split()
@@ -79,10 +78,8 @@ class Simulator:
         #     would do.
         word = self.fetch()
         op, r1, r2, imm, func = self.decode(word)
-        if (op == 0):
-            self.execute_r_type(op, r1, r2, func)
-        if (op == 1):
-            self.execute_i_type(op, r1, imm)
+        self.execute(op, r1, r2, imm, func)
+        self.update_matrix()
 
     def reset(self):
         # Reset the CPU state to just-powered-on, with everything but IMEM cleared
@@ -102,45 +99,91 @@ class Simulator:
         print_matrix(self.matrix, "Output")
     
     def fetch(self):
+        """Fetch word in imem using the program counter, then increment PC
+        
+        Returns:
+            word -- Fetched word from imem
+        """
         word = self.imem[self.PC]
         self.PC += 1
-        print(word)
         return(word)
 
     def decode(self, word):
-        # Convert from hex to bin
-        binary = SimulatorHelper._hex_to_binary(word)
-        #need to get word from fetch this is just a placeholder
-        word = 0b0001110110000001
-        # decode word into fields 
-        opcodeMask = (0b111 << 13)
-        opcode = (word & opcodeMask) >> 13
-        #if opcode is 1 then the instruction is R-type and we need to get the registers and func code
+        """Decode word and parse to components of R-type and I-Type instuctions
+        
+        Arguments:
+            word -- Gathered via fetch()
+        
+        Returns:
+            opcode -- Both I-Type and R-Type
+            r1 -- Both I-Type and R-Type
+            r2 -- Only for R-Type, None for I-Type
+            imm -- Only for I-Type, None for R-Type
+            func -- Only for R-Type, None for I-Type
+        """
+        opcode_mask = (0b111 << 13)
+        opcode = (word & opcode_mask) >> 13
+        # If opcode is 0, parse word for R-type instruction
         if (opcode == 0):
-            r1Mask = (0b111 << 10)
-            r1 = (word & r1Mask) >> 10
+            r1_mask = (0b111 << 10)
+            r1 = (word & r1_mask) >> 10
 
-            r2Mask = (0b111 << 7)
-            r2 = (word & r2Mask) >> 7
+            r2_mask = (0b111 << 7)
+            r2 = (word & r2_mask) >> 7
 
-            funcMask = (0b1111111) 
-            funcCode = (word & funcMask)
+            func_mask = (0b1111111) 
+            func = (word & func_mask)
+            imm = None
+            return opcode, r1, r2, imm, func
 
-        #if opcode is anything else then the instruction is I-type and we need a register and an immediate and the opcode will dictate the exact instruction
+        # If opcode is not 0, parse word for I-type instruction
         else:
-            r1Mask = (0b111 << 10)
-            r1 = (word & r1Mask) >> 10
+            r1_mask = (0b111 << 10)
+            r1 = (word & r1_mask) >> 10
 
-            immediateMask = (0b1111111111)
-            immediate = (word & immediateMask)
+            immediate_mask = (0b1111111111)
+            imm = (word & immediate_mask)
+            r2 = None
+            func = None
+            return opcode, r1, r2, imm, func
 
+    def execute(self, op, r1, r2, imm, func):
+        if (op == 0):
+            if (func == 0):
+                self._add(r1, r2)
+            if (func == 1):
+                self._sub(r1, r2)
+            if (func == 2):
+                self._load(r1, r2)
+            if (func == 3):
+                self._store(r1, r2)
+            if (func == 4):
+                self._in(r1, r2)
+            if (func == 5):
+                self._out(r1, r2)
+            if (func == 6):
+                self._sgt(r1, r2)
 
-        pass
+        else:
+            if (op == 1):
+                self._addi(r1, imm)
+            if (op == 2):
+                self._assigni(r1, imm)
+            if (op == 3):
+                self._beq(r1, label)
+            if (op == 4):
+                self._bne(r1, label)
+            if (op == 5):
+                self._rand(r1, imm)
+    
+    def update_matrix(self):
+        i = 0
+        for x in range(10):
+            for y in range(10):
+                self.matrix[x][y] = self.dmem[i]
+                i = i + 1
+                
 
-    def execute(self):
-        pass
-
-class Instructions(Simulator):
     def _add(self, r1, r2):
         '''
         r1 = r1 + r2
@@ -183,22 +226,24 @@ class Instructions(Simulator):
         '''
         self.dmem[r2] = self.regfile[r1]
 
+    # TODO: Update label
     def _beq(self, r1, label):
         '''
         If (r1 == $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
         '''
-        if (regfile[r1] == regfile[7]):
+        if (self.regfile[r1] == self.regfile[7]):
             self.pc = label
         else:
             pass
 
+    # TODO: Update label
     def _bne(self, r1, label):
         '''        
         If (r1 != $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
         '''
-        if (regfile[r1] != regfile[7]):
+        if (self.regfile[r1] != self.regfile[7]):
             self.pc = label
         else:
             pass
@@ -208,10 +253,10 @@ class Instructions(Simulator):
         $7 = (r1 > r2) ? 1 : 0 [implicitly, $7 is always used in the comparison]
         R-format
         '''
-        if (regfile[r1] > regfile[r2]):
-            regfile[7] = 1
+        if (self.regfile[r1] > self.regfile[r2]):
+            self.regfile[7] = 1
         else:
-            regfile[7] = 0
+            self.regfile[7] = 0
 
     def _in(self, r1, r2):
         '''
@@ -227,39 +272,13 @@ class Instructions(Simulator):
         ''' 
         self.button[r2] = regfile[r1]
         
-    def _rand(self, r1, r2):
+    def _rand(self, r1, imm):
         '''
         r1 = [randvalue] & imm    [randvalue is a random 8-bit value]
         I-format
         '''
         randvalue = random.randint(0, 63)
-        binaryRand = SimulatorHelper._dec_to_binary(randvalue)
-        regfile[r1] = binaryRand & imm
-
-class SimulatorHelper(Simulator):
-    def _hex_to_binary(hex_string):
-        '''
-        Convert hexadecimal to binary
-        '''
-        binary = bin(int(hex_string, 16))
-        binary = binary[2:].zfill(16)
-        return(binary)
-    
-    def _binary_to_hex(self, binary_string):
-        '''
-        Convert binary to hexadecimal
-        '''
-        hexadecimal = hex(int(binary_string, 2))
-        return(hexadecimal)
-    
-    def _binary_to_dec(self, binary_string):
-        dec = int(binary_string, 2)
-        return(dec)
-
-    def _dec_to_binary(self, dec_string):
-        binary = bin(int(dec_string, 10))
-        binary = binary[2:].zfill(16)
-        return(binary)
+        self.regfile[r1] = randvalue & imm
 
 # Main function for testing
 if __name__ == '__main__':
