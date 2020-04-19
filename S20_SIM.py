@@ -183,9 +183,9 @@ class Simulator:
             if op == 2:
                 self._assigni(r1, imm)
             if op == 3:
-                self._beq(r1, label)
+                self._beq(r1, imm)
             if op == 4:
-                self._bne(r1, label)
+                self._bne(r1, imm)
             if op == 5:
                 self._rand(r1, imm)
 
@@ -241,25 +241,26 @@ class Simulator:
         """
         self.dmem[r2] = self.regfile[r1]
 
-    # TODO: Update label
     def _beq(self, r1, label):
         """
         If (r1 == $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
         """
         if self.regfile[r1] == self.regfile[7]:
-            self.pc = label
+            self.PC += label
+            self.PC -= 1024
+
         else:
             pass
 
-    # TODO: Update label
     def _bne(self, r1, label):
         """        
         If (r1 != $7) goto label [implicitly, $7 is always used in the comparison]
         I-format
         """
         if self.regfile[r1] != self.regfile[7]:
-            self.pc = label
+            self.PC += label
+            self.PC -= 1024
         else:
             pass
 
@@ -285,7 +286,7 @@ class Simulator:
         IO[r2] = r1
         R-format
         """
-        self.button[r2] = regfile[r1]
+        self.buttons[r2] = self.regfile[r1]
 
     def _rand(self, r1, imm):
         """
