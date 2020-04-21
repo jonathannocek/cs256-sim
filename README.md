@@ -1,5 +1,12 @@
 # 256sim
 
+## Note
+
+This project was developed by the professor with contributions from myself and another student. 
+The original repository is found [here](https://github.com/liffiton/256sim).
+
+## Overview
+
 256sim is a CPU simulator for the student-designed ISAs from CS 256 (Computer
 Organization and Architecture) at Illinois Wesleyan University.  Each year,
 students design a new ISA from scratch (though heavily influenced by MIPS,
@@ -16,3 +23,8 @@ The simulator can be run via the command-line as ``256sim.py``.
 The code is compatible with Python 3.6+ with no dependencies beyond the
 Python standard library.
 
+## Authors
+
+Developed by Mark Liffiton.
+
+S20-SIM ISA simulation code contributed by Jonathan Nocek and Kyle Wheat.

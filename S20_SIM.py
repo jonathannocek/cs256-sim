@@ -1,6 +1,9 @@
 #
 # S20_SIM.py  --  Simulator class for the SIM CPU designed by CS256-S20.
 #
+
+# Authors: Mark Liffiton, Jonathan Nocek, Kyle Wheat
+
 from utils import print_val, print_mem, print_input, print_matrix
 import random
 
@@ -211,6 +214,9 @@ class Simulator:
         r1 = r1 + imm
         I-format
         """
+        # correct for negative immediates (not parsed as negative so far)
+        if imm > 0b111111111:
+            imm -= 1024
         self.regfile[r1] += imm
 
     def _assigni(self, r1, imm):
@@ -218,6 +224,9 @@ class Simulator:
         r1 = imm
         I-format
         """
+        # correct for negative immediates (not parsed as negative so far)
+        if imm > 0b111111111:
+            imm -= 1024
         self.regfile[r1] = imm
 
     def _sub(self, r1, r2):
@@ -247,9 +256,11 @@ class Simulator:
         I-format
         """
         if self.regfile[r1] == self.regfile[7]:
+            # correct for negative immediates (not parsed as negative so far)
+            if label > 0b111111111:
+                label -= 1024
             self.PC += label
-            self.PC -= 1024
-
+            self.PC -= 1
         else:
             pass
 
@@ -259,8 +270,11 @@ class Simulator:
         I-format
         """
         if self.regfile[r1] != self.regfile[7]:
+            # correct for negative immediates (not parsed as negative so far)
+            if label > 0b111111111:
+                label -= 1024
             self.PC += label
-            self.PC -= 1024
+            self.PC -= 1
         else:
             pass
 
@@ -286,18 +300,14 @@ class Simulator:
         IO[r2] = r1
         R-format
         """
-        self.buttons[r2] = self.regfile[r1]
+        x = self.regfile[r2] % _MATRIXSIZE
+        y = self.regfile[r2] // _MATRIXSIZE
+        self.matrix[y][x] = self.regfile[r1]
 
     def _rand(self, r1, imm):
         """
         r1 = [randvalue] & imm    [randvalue is a random 8-bit value]
         I-format
         """
-        randvalue = random.randint(0, 63)
+        randvalue = random.getrandbits(8)
         self.regfile[r1] = randvalue & imm
-
-
-# Main function for testing
-if __name__ == "__main__":
-    sim = Simulator()
-    sim.step()
